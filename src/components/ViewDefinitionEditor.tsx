@@ -2,13 +2,9 @@
 
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { AlertCircle, Code2 } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { ViewDefinition } from '@/lib/api';
-import { exampleViewDefinitions } from '@/lib/examples';
 import { json } from '@codemirror/lang-json';
 
 const CodeMirror = dynamic(() => import('@uiw/react-codemirror'), { ssr: false });
@@ -16,22 +12,12 @@ const CodeMirror = dynamic(() => import('@uiw/react-codemirror'), { ssr: false }
 interface ViewDefinitionEditorProps {
   value: ViewDefinition | null;
   onChange: (viewDef: ViewDefinition | null) => void;
-  onLoadExample?: () => void;
-  onFormat?: () => void;
 }
 
-export function ViewDefinitionEditor({ value, onChange, onLoadExample, onFormat }: ViewDefinitionEditorProps) {
+export function ViewDefinitionEditor({ value, onChange }: ViewDefinitionEditorProps) {
   const [jsonText, setJsonText] = useState(value ? JSON.stringify(value, null, 2) : '');
   const [error, setError] = useState<string | null>(null);
 
-  const handleExampleSelect = (exampleKey: string) => {
-    if (exampleKey && exampleViewDefinitions[exampleKey]) {
-      const example = exampleViewDefinitions[exampleKey];
-      setJsonText(JSON.stringify(example, null, 2));
-      setError(null);
-      onChange(example);
-    }
-  };
 
   const handleJsonChange = (text: string) => {
     setJsonText(text);
@@ -56,18 +42,6 @@ export function ViewDefinitionEditor({ value, onChange, onLoadExample, onFormat 
     }
   };
 
-  const handleFormatJson = () => {
-    if (!jsonText.trim()) return;
-    
-    try {
-      const parsed = JSON.parse(jsonText);
-      const formatted = JSON.stringify(parsed, null, 2);
-      setJsonText(formatted);
-      setError(null);
-    } catch (e) {
-      setError('Cannot format invalid JSON: ' + (e as Error).message);
-    }
-  };
 
   return (
     <div className="flex flex-col h-full">

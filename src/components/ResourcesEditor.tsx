@@ -1,12 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
-import { examplePatientResources } from '@/lib/examples';
 
 interface ResourcesEditorProps {
   value: unknown[];
@@ -17,11 +14,6 @@ export function ResourcesEditor({ value, onChange }: ResourcesEditorProps) {
   const [jsonText, setJsonText] = useState(value.length > 0 ? JSON.stringify(value, null, 2) : '');
   const [error, setError] = useState<string | null>(null);
 
-  const handleLoadExample = () => {
-    setJsonText(JSON.stringify(examplePatientResources, null, 2));
-    setError(null);
-    onChange(examplePatientResources);
-  };
 
   const handleJsonChange = (text: string) => {
     setJsonText(text);

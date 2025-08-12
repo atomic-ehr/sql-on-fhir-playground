@@ -1,5 +1,6 @@
 {
-  "installCommand": "npm install",
-  "buildCommand": "npm run build",
-  "outputDirectory": ".next"
+  "installCommand": "bun install",
+  "buildCommand": "NODE_ENV=production bun run build",
+  "outputDirectory": ".next-prod",
+  "framework": "nextjs"
 }

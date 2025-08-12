@@ -35,6 +35,12 @@ test("hello world", () => {
 });
 ```
 
+## TypeScript & Build Verification
+
+- Use `bun tsc --noEmit` to check TypeScript errors
+- Use `bun run build` to test that the application builds correctly
+- Always run `bun run build` before deploying to ensure there are no build errors
+
 ## Frontend
 
 Use HTML imports with `Bun.serve()`. Don't use `vite`. HTML imports fully support React, CSS, Tailwind.
