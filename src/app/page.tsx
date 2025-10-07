@@ -41,6 +41,7 @@ import {
   ResponseTrace,
 } from "@/lib/api";
 import { ErrorDisplay } from "@/components/ErrorDisplay";
+import { serverConfigs, getServerConfig } from "@/lib/server-config";
 
 const defaultViewDefinition = {
   resourceType: "ViewDefinition",
@@ -58,11 +59,20 @@ const defaultViewDefinition = {
 };
 
 export default function Home() {
-  const [serverUrl, setServerUrl] = useState(
-    "https://niquola77.edge.aidbox.app/fhir",
-  );
+  const [selectedServerId, setSelectedServerId] = useState("aidbox");
   const [viewDefinitionText, setViewDefinitionText] = useState(
     JSON.stringify(defaultViewDefinition, null, 2),
+  );
+  const [resourcesText, setResourcesText] = useState(
+    JSON.stringify([
+      {
+        resourceType: "Patient",
+        id: "example-1",
+        name: [{ family: "Smith", given: ["John"] }],
+        gender: "male",
+        birthDate: "1970-01-01"
+      }
+    ], null, 2)
   );
   const [format, setFormat] = useState<"json" | "ndjson" | "csv">("json");
   const [limit, setLimit] = useState("100");
@@ -74,8 +84,12 @@ export default function Home() {
     null,
   );
 
+  const selectedServer = getServerConfig(selectedServerId);
+  const serverUrl = selectedServer?.url || "";
+
   const handleRun = async () => {
     let viewDefinition: ViewDefinition;
+    let resources: unknown[] | undefined;
 
     try {
       viewDefinition = JSON.parse(viewDefinitionText);
@@ -91,6 +105,31 @@ export default function Home() {
         ],
       });
       return;
+    }
+
+    // Parse resources if server supports it and resources are provided
+    if (selectedServer?.supportsDirectResources && resourcesText.trim()) {
+      try {
+        const parsedResources = JSON.parse(resourcesText);
+        if (Array.isArray(parsedResources)) {
+          resources = parsedResources;
+        } else {
+          // If single resource, wrap in array
+          resources = [parsedResources];
+        }
+      } catch (parseError) {
+        setError({
+          resourceType: "OperationOutcome",
+          issue: [
+            {
+              severity: "error",
+              code: "invalid",
+              diagnostics: `Invalid JSON in Resources: ${parseError instanceof Error ? parseError.message : "Unknown parsing error"}`,
+            },
+          ],
+        });
+        return;
+      }
     }
 
     if (!viewDefinition || viewDefinition.resourceType !== "ViewDefinition") {
@@ -120,6 +159,7 @@ export default function Home() {
         viewDefinition,
         format,
         limit: limit ? parseInt(limit) : undefined,
+        resources,
       });
 
       setResults(result.data);
@@ -183,32 +223,37 @@ export default function Home() {
         <ResizablePanel defaultSize={40} minSize={20} maxSize={60}>
           <div className="h-full bg-white p-6 overflow-y-auto">
             <div className="space-y-6">
-              {/* Server URL Input with Run Button */}
+              {/* Server Selection with Run Button */}
               <div className="space-y-2">
-                <Label htmlFor="server-url">Server URL</Label>
+                <Label htmlFor="server">Server</Label>
                 <div className="flex gap-2">
-                  <Input
-                    id="server-url"
-                    type="url"
-                    placeholder="http://localhost:3005"
-                    value={serverUrl}
-                    onChange={(e) => setServerUrl(e.target.value)}
-                    className="flex-1"
-                    list="server-urls"
-                  />
-                  <datalist id="server-urls">
-                    <option value="http://localhost:3005" />
-                    <option value="https://niquola77.edge.aidbox.app/fhir" />
-                  </datalist>
+                  <Select
+                    value={selectedServerId}
+                    onValueChange={(value) => setSelectedServerId(value)}
+                  >
+                    <SelectTrigger id="server" className="flex-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {serverConfigs.map((server) => (
+                        <SelectItem key={server.id} value={server.id}>
+                          {server.name} - {server.url}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <Button
                     onClick={handleRun}
-                    disabled={loading}
+                    disabled={loading || !selectedServer}
                     size="icon"
                     title="Run Query"
                   >
                     <PlayCircle className="h-4 w-4" />
                   </Button>
                 </div>
+                {selectedServer && (
+                  <p className="text-sm text-gray-500">{selectedServer.url}</p>
+                )}
               </div>
 
               {/* Format and Limit Row */}
@@ -256,12 +301,32 @@ export default function Home() {
                     value={viewDefinitionText}
                     height="auto"
                     minHeight="200px"
-                    maxHeight="600px"
+                    maxHeight="400px"
                     extensions={[json()]}
                     onChange={(value) => setViewDefinitionText(value)}
                   />
                 </div>
               </div>
+
+              {/* Resources Input (Conditional) */}
+              {selectedServer?.supportsDirectResources && (
+                <div className="space-y-2">
+                  <Label htmlFor="resources">Resources (JSON Array)</Label>
+                  <div className="text-sm text-gray-500 mb-1">
+                    Provide FHIR resources to process directly instead of querying the server
+                  </div>
+                  <div className="border rounded-md overflow-hidden">
+                    <CodeMirror
+                      value={resourcesText}
+                      height="auto"
+                      minHeight="150px"
+                      maxHeight="300px"
+                      extensions={[json()]}
+                      onChange={(value) => setResourcesText(value)}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </ResizablePanel>
