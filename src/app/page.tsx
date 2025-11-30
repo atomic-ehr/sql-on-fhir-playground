@@ -76,6 +76,7 @@ export default function Home() {
   );
   const [format, setFormat] = useState<"json" | "ndjson" | "csv">("json");
   const [limit, setLimit] = useState("100");
+  const [useDirectResources, setUseDirectResources] = useState(false);
   const [results, setResults] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<OperationOutcome | null>(null);
@@ -107,8 +108,8 @@ export default function Home() {
       return;
     }
 
-    // Parse resources if server supports it and resources are provided
-    if (selectedServer?.supportsDirectResources && resourcesText.trim()) {
+    // Parse resources if checkbox is enabled and resources are provided
+    if (useDirectResources && resourcesText.trim()) {
       try {
         const parsedResources = JSON.parse(resourcesText);
         if (Array.isArray(parsedResources)) {
@@ -308,8 +309,22 @@ export default function Home() {
                 </div>
               </div>
 
+              {/* Direct Resources Checkbox */}
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="use-direct-resources"
+                  checked={useDirectResources}
+                  onChange={(e) => setUseDirectResources(e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                <Label htmlFor="use-direct-resources" className="text-sm font-medium cursor-pointer">
+                  Use direct resources
+                </Label>
+              </div>
+
               {/* Resources Input (Conditional) */}
-              {selectedServer?.supportsDirectResources && (
+              {useDirectResources && (
                 <div className="space-y-2">
                   <Label htmlFor="resources">Resources (JSON Array)</Label>
                   <div className="text-sm text-gray-500 mb-1">

@@ -6,77 +6,121 @@ A web application for testing SQL on FHIR ViewDefinitions against FHIR servers. 
 
 ## Features
 
-- Support for multiple FHIR servers with different capabilities
-- Direct resource processing for servers that support the `$run` operation with resources parameter
+- Support for multiple FHIR servers
+- Direct resource processing via "Use direct resources" checkbox - allows testing ViewDefinitions with custom FHIR resources
 - Multiple output formats: JSON, NDJSON, CSV
 - Request/response trace debugging
 - Real-time error feedback
 
 ## Getting Started
 
-First, run the development server:
+This project uses [Bun](https://bun.sh) as the JavaScript runtime and package manager.
+
+### Install Bun
+
+If you don't have Bun installed:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+curl -fsSL https://bun.sh/install | bash
+```
+
+### Install Dependencies
+
+```bash
+bun install
+```
+
+### Run the Development Server
+
+```bash
+bun run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Build for Production
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Server Configuration
-
-The application supports multiple FHIR servers with different capabilities. Server configurations are managed in `/src/lib/server-config.ts`.
-
-### Adding a New Server
-
-To add a new server, edit the `serverConfigs` array in `/src/lib/server-config.ts`:
-
-```typescript
-export const serverConfigs: ServerConfig[] = [
-  // ... existing servers ...
-  {
-    id: 'my-server',                       // Unique identifier
-    name: 'My FHIR Server',                // Display name in dropdown
-    url: 'https://my-server.com/fhir',     // Server base URL
-    supportsDirectResources: true,          // Whether server supports direct resource input
-    description: 'Optional description'     // Optional description shown in dropdown
-  }
-];
+```bash
+bun run build
 ```
 
-### Server Capabilities
+### Run Production Server
 
-- **Standard FHIR Servers**: Set `supportsDirectResources: false`. These servers will query their own data store when executing ViewDefinitions.
+```bash
+bun run start
+```
 
-- **Servers with Direct Resource Support**: Set `supportsDirectResources: true`. When selected, a "Resources" input field appears where you can provide FHIR resources directly. This is useful for servers that support the `resources` parameter in the `$run` operation, allowing you to process arbitrary FHIR resources without storing them on the server.
+## Technology Stack
 
-### Current Servers
+- **Runtime**: [Bun](https://bun.sh) - Fast JavaScript runtime and package manager
+- **Framework**: [Next.js 15](https://nextjs.org/docs) - React framework with App Router
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Deployment**: Vercel with GitHub Actions
 
-1. **Aidbox (niquola77)**: Standard FHIR server implementation
+## Adding New FHIR Servers
+
+The playground supports multiple FHIR servers with different capabilities. You can easily add new servers to test SQL on FHIR ViewDefinitions against different implementations.
+
+### Step-by-Step Guide
+
+1. **Edit the Server Configuration File**
+
+   Open `src/lib/server-config.ts` and add your server to the `serverConfigs` array:
+
+   ```typescript
+   export const serverConfigs: ServerConfig[] = [
+     // ... existing servers ...
+     {
+       id: 'my-server',                          // Unique identifier (lowercase, no spaces)
+       name: 'My FHIR Server',                   // Display name shown in the server dropdown
+       url: 'https://my-server.com/fhir',        // FHIR server base URL
+       description: 'My custom FHIR server'      // Optional: shown as help text in dropdown
+     }
+   ];
+   ```
+
+2. **Test Your Configuration**
+
+   ```bash
+   # Run the development server
+   bun run dev
+   ```
+
+   Open http://localhost:3000 and verify:
+   - Your server appears in the server dropdown
+   - The description is displayed correctly
+
+3. **Deploy Your Changes**
+
+   ```bash
+   git add src/lib/server-config.ts
+   git commit -m "Add [Your Server Name] to server configuration"
+   git push
+   ```
+
+   The changes will automatically deploy to production via GitHub Actions.
+
+### Configuration Fields Reference
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `id` | string | ✓ | Unique identifier for the server (used in URLs and code) |
+| `name` | string | ✓ | Display name shown in the server dropdown |
+| `url` | string | ✓ | FHIR server base URL (should support SQL on FHIR) |
+| `description` | string | | Optional help text displayed in the server dropdown |
+
+### Currently Configured Servers
+
+1. **Aidbox** (`aidbox`)
    - URL: `https://niquola77.edge.aidbox.app/fhir`
-   - Direct resources: Not supported
+   - Type: Standard FHIR server with SQL on FHIR support
 
-2. **Helios Software**: Supports direct resource processing
+2. **Helios Software** (`helios`)
    - URL: `https://sof.heliossoftware.com`
-   - Direct resources: Supported via `$run` operation
+   - Type: Supports direct resource processing via `$run` operation
 
 ## Deploy on Vercel
 
