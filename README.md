@@ -2,6 +2,8 @@
 
 A web application for testing SQL on FHIR ViewDefinitions against FHIR servers. This playground allows you to create, edit, and execute ViewDefinitions with support for multiple output formats and direct resource processing.
 
+**[Live Demo](https://sof-client-ts.vercel.app/)**
+
 ## Features
 
 - Support for multiple FHIR servers with different capabilities
@@ -78,6 +80,32 @@ export const serverConfigs: ServerConfig[] = [
 
 ## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+This project uses GitHub Actions for automatic deployment to Vercel on every push to the `main` branch.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Automatic Deployment Setup
+
+The repository includes a GitHub Actions workflow (`.github/workflows/deploy.yml`) that automatically deploys to Vercel. To enable automatic deployments, you need to configure the following GitHub repository secrets:
+
+1. **VERCEL_TOKEN**: Your Vercel authentication token
+   - Get it from [Vercel Account Settings > Tokens](https://vercel.com/account/tokens)
+
+2. **VERCEL_ORG_ID**: Your Vercel organization ID
+   - Found in `.vercel/project.json` (value: `team_4nvOpzKfZPO3DhNzJx3eNgUJ`)
+
+3. **VERCEL_PROJECT_ID**: Your Vercel project ID
+   - Found in `.vercel/project.json` (value: `prj_yjA8dnKYXxqdsKLqhivWtpquv8me`)
+
+To add these secrets:
+1. Go to your GitHub repository settings
+2. Navigate to Settings > Secrets and variables > Actions
+3. Click "New repository secret" and add each of the three secrets above
+
+### Manual Deployment
+
+You can also deploy manually using the Vercel CLI:
+
+```bash
+bunx vercel --prod
+```
+
+For more information, check out the [Vercel deployment documentation](https://vercel.com/docs).
