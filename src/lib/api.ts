@@ -154,8 +154,7 @@ export class SofClient {
     } else if (contentType.includes('text/csv')) {
       responseBody = await response.text();
     } else if (contentType.includes('application/x-ndjson')) {
-      const text = await response.text();
-      responseBody = text.trim().split('\n').map(line => JSON.parse(line));
+      responseBody = await response.text();
     } else {
       responseBody = await response.blob();
     }

@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     responseHeaders.set('Content-Type', contentType);
     
     return new NextResponse(
-      contentType.includes('json') ? JSON.stringify(data) : data,
+      contentType.includes('application/json') ? JSON.stringify(data) : data,
       {
         status: response.status,
         statusText: response.statusText,

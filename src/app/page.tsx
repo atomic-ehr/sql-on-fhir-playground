@@ -509,7 +509,7 @@ export default function Home() {
                 {results && !error && (
                 <div className="space-y-2">
                   <h3 className="text-lg font-semibold">Results</h3>
-                  {format === "csv" && typeof results === "string" ? (
+                  {(format === "csv" || format === "ndjson") && typeof results === "string" ? (
                     <pre className="p-4 bg-white rounded-lg shadow-sm border border-gray-200 overflow-auto max-h-[600px] text-sm font-mono">
                       {results}
                     </pre>
